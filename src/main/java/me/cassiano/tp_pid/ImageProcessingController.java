@@ -1,9 +1,13 @@
 package me.cassiano.tp_pid;
 
-import ij.ImageJ;
+import java.awt.geom.Ellipse2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.net.URL;
+import java.util.PriorityQueue;
+import java.util.ResourceBundle;
+
 import ij.ImagePlus;
-import ij.gui.OvalRoi;
-import ij.gui.Roi;
 import ij.gui.ShapeRoi;
 import ij.io.Opener;
 import ij.process.ImageConverter;
@@ -26,30 +30,18 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.FileChooser;
 //import java.awt.Color;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.geom.Ellipse2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.ResourceBundle;
-
-import static ij.process.ImageProcessor.FIND_EDGES;
-import static ij.process.ImageProcessor.MAX;
-import static ij.process.ImageProcessor.MIN;
 
 public class ImageProcessingController implements Initializable {
 
@@ -68,7 +60,10 @@ public class ImageProcessingController implements Initializable {
 
     @FXML
     private Group rootGroup;
-
+    
+    @FXML
+    private Group rootGroupOriginal;
+    
     @FXML
     private Button clearSeedsButton;
 
@@ -100,8 +95,6 @@ public class ImageProcessingController implements Initializable {
 
     private Shape shape;
 
-
-    @Override
     public void initialize(URL location, ResourceBundle resources) {
 
         seedShape = Seed.Shape.Circle;
@@ -121,7 +114,15 @@ public class ImageProcessingController implements Initializable {
             registerListenerForWindowingSliders();
         }
 
-        originalImage = new Opener().openImage("/home/mateus/Imagens/lena.jpeg");
+        originalImage = new Opener().openImage("C:\\Users\\BETOS\\Pictures\\9.png");
+        
+        Image currentImage = SwingFXUtils.
+        		toFXImage(originalImage.getBufferedImage(), null);
+        ImageView originalImageView = new ImageView();
+        originalImageView.setImage(currentImage);
+        rootGroupOriginal.getChildren().clear();
+        rootGroupOriginal.getChildren().add(originalImageView);
+        
         ImageConverter  converter = new ImageConverter(originalImage);
         converter.convertToGray8();
 
@@ -157,6 +158,14 @@ public class ImageProcessingController implements Initializable {
             }
 
             originalImage = new Opener().openImage(file.getPath());
+            
+            Image currentImage = SwingFXUtils.
+            		toFXImage(originalImage.getBufferedImage(), null);
+            ImageView originalImageView = new ImageView();
+            originalImageView.setImage(currentImage);
+            rootGroupOriginal.getChildren().clear();
+            rootGroupOriginal.getChildren().add(originalImageView);
+            
             ImageConverter converter = new ImageConverter(originalImage);
             converter.convertToGray8();
 
@@ -220,7 +229,6 @@ public class ImageProcessingController implements Initializable {
     private void registerCanvasForMouseEvents() {
 
         canvas.setOnMousePressed(new EventHandler<MouseEvent>() {
-            @Override
             public void handle(MouseEvent event) {
 
                 Seed seed;
@@ -290,7 +298,6 @@ public class ImageProcessingController implements Initializable {
         });
 
         canvas.setOnMouseDragged(new EventHandler<MouseEvent>() {
-            @Override
             public void handle(MouseEvent event) {
 
                 if (canvas.getBoundsInLocal().contains(
@@ -330,7 +337,6 @@ public class ImageProcessingController implements Initializable {
         });
 
         canvas.setOnMouseReleased(new EventHandler<MouseEvent>() {
-            @Override
             public void handle(MouseEvent event) {
 
                 canvas.setOnMousePressed(null);
@@ -387,7 +393,6 @@ public class ImageProcessingController implements Initializable {
         zoomSlider.setDisable(false);
 
         zoomSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
             public void changed(ObservableValue<? extends Number> observable,
                                 Number oldValue, Number newValue) {
                 sliderZoomProperty.set(newValue.doubleValue());
@@ -395,7 +400,6 @@ public class ImageProcessingController implements Initializable {
         });
 
         sliderZoomProperty.addListener(new InvalidationListener() {
-            @Override
             public void invalidated(Observable observable) {
 
                 if (pickingSeed)
@@ -413,7 +417,6 @@ public class ImageProcessingController implements Initializable {
     private void registerScrollListener() {
 
         zoomGroup.addEventFilter(ScrollEvent.ANY, new EventHandler<ScrollEvent>() {
-            @Override
             public void handle(ScrollEvent event) {
 
                 if (pickingSeed)
@@ -446,7 +449,6 @@ public class ImageProcessingController implements Initializable {
         maxSlider.setDisable(false);
 
         minSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
             public void changed(ObservableValue<? extends Number> observable,
                                 Number oldValue, Number newValue) {
 
@@ -458,7 +460,6 @@ public class ImageProcessingController implements Initializable {
         });
 
         maxSlider.valueProperty().addListener(new ChangeListener<Number>() {
-            @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
 
                 ImageProcessor ip = originalImage.getChannelProcessor();
